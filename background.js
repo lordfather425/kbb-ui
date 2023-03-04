@@ -1,17 +1,22 @@
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-  // Make an HTTP request to the Kelly Blue Book API using the title of the posting as a parameter
-  var xhr = new XMLHttpRequest();
-  xhr.open("GET", "https://api.kbb.com/api/vehicle/evaluate/vin/" + encodeURIComponent(request.title), true);
-  xhr.setRequestHeader("Authorization", "Bearer YOUR_API_KEY");
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState == 4) {
-      // Parse the response and extract the value of the vehicle
-      var response = JSON.parse(xhr.responseText);
-      var value = response.data.vehicle.value;
+function getCarValue(title) {
+  const url = `https://www.carqueryapi.com/api/0.3/?cmd=getTrims&year=${new Date().getFullYear()}&make=${encodeURIComponent(title.split(' ')[0])}&model=${encodeURIComponent(title.split(' ')[1])}`;
+  
+  return fetch(url)
+    .then(response => response.json())
+    .then(data => {
+      if (data.Trims && data.Trims.length > 0) {
+        return data.Trims[0].model_price;
+      } else {
+        throw new Error("Unable to retrieve car value.");
+      }
+    });
+}
 
-      // Send a message back to the content script with the Kelly Blue Book value
-      chrome.tabs.sendMessage(sender.tab.id, {value: value});
-    }
-  };
-  xhr.send();
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+  if (request.action === "getCarValue") {
+    getCarValue(request.title)
+      .then(value => sendResponse({ value: value }))
+      .catch(error => sendResponse({ error: error.message }));
+    return true;
+  }
 });
