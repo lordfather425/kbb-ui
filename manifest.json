@@ -1,0 +1,23 @@
+{
+  "name": "Kelly Blue Book Value",
+  "version": "1.0",
+  "description": "Displays Kelly Blue Book value based on the title of a posting",
+  "manifest_version": 2,
+  "icons": {
+    "16": "icon16.png",
+    "32": "icon16.png",
+    "48": "icon16.png",
+    "128": "icon16.png"
+  },
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["content.js"]
+    }
+  ],
+  "permissions": ["http://*/*", "https://*/*"]
+}
