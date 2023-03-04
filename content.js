@@ -1,36 +1,37 @@
-function addValueOverlay(value) {
-  const overlay = document.createElement("div");
-  overlay.style.position = "fixed";
-  overlay.style.top = "0";
-  overlay.style.left = "0";
-  overlay.style.width = "100%";
-  overlay.style.height = "100%";
-  overlay.style.background = "rgba(0, 0, 0, 0.5)";
-  overlay.style.zIndex = "9999";
-  overlay.style.display = "flex";
-  overlay.style.alignItems = "center";
-  overlay.style.justifyContent = "center";
+// content.js
 
-  const valueDisplay = document.createElement("div");
-  valueDisplay.style.color = "#fff";
-  valueDisplay.style.fontSize = "2em";
-  valueDisplay.style.textAlign = "center";
-  valueDisplay.style.padding = "1em";
-  valueDisplay.textContent = `Estimated value: $${value}`;
-
-  overlay.appendChild(valueDisplay);
-  document.body.appendChild(overlay);
-}
-
-function getTitle() {
-  const title = document.querySelector("h2.postingtitle span.postingtitletext:first-of-type").textContent.trim();
-  return title.split(" - ")[0];
-}
-
-chrome.runtime.sendMessage({ action: "getCarValue", title: getTitle() }, function(response) {
-  if (response.error) {
-    console.error(response.error);
-  } else {
-    addValueOverlay(response.value);
+// Look for listings on Facebook Marketplace page
+if (window.location.hostname === "www.facebook.com" && window.location.pathname.startsWith("/marketplace/item")) {
+  // Extract the title of the listing
+  const titleElement = document.querySelector("h1[itemprop='name']");
+  if (titleElement) {
+    const title = titleElement.innerText.trim();
+    console.log("Title: ", title);
+    // Send message to background script with the title
+    chrome.runtime.sendMessage({type: "getCarValue", title: title}, (response) => {
+      if (response && response.value) {
+        // Display the value in an overlay
+        const value = response.value;
+        const overlay = document.createElement("div");
+        overlay.style.position = "fixed";
+        overlay.style.top = "0";
+        overlay.style.left = "0";
+        overlay.style.width = "100%";
+        overlay.style.height = "100%";
+        overlay.style.backgroundColor = "#fff";
+        overlay.style.opacity = "0.9";
+        overlay.style.zIndex = "9999";
+        overlay.style.display = "flex";
+        overlay.style.justifyContent = "center";
+        overlay.style.alignItems = "center";
+        overlay.innerHTML = `<div style="text-align: center;">
+                               <p style="font-size: 30px;">Estimated Value: $${value}</p>
+                               <p style="font-size: 20px;">Powered by CarQuery API</p>
+                             </div>`;
+        document.body.appendChild(overlay);
+      } else {
+        console.log("Error: ", response.error);
+      }
+    });
   }
-});
+}
