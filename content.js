@@ -1,23 +1,32 @@
-try {
-  // Get the title of the posting from the Facebook Marketplace page
-  var titleElement = document.querySelector("[data-testid='marketplace_feed_item_title']");
-  if (!titleElement) {
-    throw new Error("Title element not found");
+// Send a message to the background script to retrieve the Kelly Blue Book value
+chrome.runtime.sendMessage({action: "getKBBValue", title: document.title}, function(response) {
+  if (chrome.runtime.lastError) {
+    // Display an error message if there was an error communicating with the background script
+    console.error("Error communicating with the background script:", chrome.runtime.lastError);
+    return;
   }
-  var title = titleElement.textContent;
 
-  // Send a message to the background script with the title of the posting
-  chrome.runtime.sendMessage({title: title}, function(response) {
-    // Get the Kelly Blue Book value from the response and display it on the page
-    var value = response.value;
-    if (value) {
-      var valueElement = document.createElement("div");
-      valueElement.textContent = "Kelly Blue Book value: $" + value;
-      titleElement.appendChild(valueElement);
-    } else {
-      throw new Error("No value found for the given title");
-    }
-  });
-} catch (err) {
-  console.error(err);
-}
+  if (response.error) {
+    // Display an error message if the background script encountered an error retrieving the KBB value
+    console.error("Error retrieving KBB value:", response.error);
+    return;
+  }
+
+  // Create a div element to hold the value
+  var kbbValueDiv = document.createElement("div");
+  
+  // Set the div's styles
+  kbbValueDiv.style.position = "fixed";
+  kbbValueDiv.style.bottom = "10px";
+  kbbValueDiv.style.right = "10px";
+  kbbValueDiv.style.padding = "10px";
+  kbbValueDiv.style.backgroundColor = "#f9f9f9";
+  kbbValueDiv.style.border = "1px solid #ccc";
+  
+  // Create a text node with the value and append it to the div
+  var kbbValueTextNode = document.createTextNode("Kelly Blue Book Value: $" + response.value);
+  kbbValueDiv.appendChild(kbbValueTextNode);
+  
+  // Append the div to the document body
+  document.body.appendChild(kbbValueDiv);
+});
