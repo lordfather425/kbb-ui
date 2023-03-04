@@ -4,10 +4,10 @@
   "description": "Displays Kelly Blue Book value based on the title of a posting",
   "manifest_version": 2,
   "icons": {
-    "16": "icon16.png",
-    "32": "icon16.png",
-    "48": "icon16.png",
-    "128": "icon16.png"
+    "16": "icon.png",
+    "32": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
   },
   "background": {
     "scripts": ["background.js"],
